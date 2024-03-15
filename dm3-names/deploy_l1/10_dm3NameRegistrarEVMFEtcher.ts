@@ -17,6 +17,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const Dm3NameRegistrar = await hre.companionNetworks['l2'].deployments.get('Dm3NameRegistrar');
 
+  console.log({ Dm3NameRegistrar })
+
+  if (!Dm3NameRegistrar.address) throw 'Dm3NameRegistrar not found';
+
 
   await deploy('Dm3NameRegistrarEVMFetcher', {
     from: deployer,

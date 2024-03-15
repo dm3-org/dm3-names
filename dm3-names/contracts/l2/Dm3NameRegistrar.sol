@@ -38,7 +38,8 @@ contract Dm3NameRegistrar is
     mapping(bytes32 => string) public reverse;
 
     // Mapping to store text records for each node
-    mapping(bytes32 => mapping(string => string)) public texts;
+    mapping(uint64 => mapping(bytes32 => mapping(string => string)))
+        public texts;
 
     // Event emitted when a name is registered
     event NameRegistered(address indexed addr, string indexed name);
@@ -79,19 +80,19 @@ contract Dm3NameRegistrar is
         //emit NameRegistered event
         emit NameRegistered(msg.sender, _name);
     }
-    /// @notice Set text for a label
-    /// @param label The label to set the text for
+    /// @notice Set text for a node
+    /// @param node The node to set the text for
     /// @param key The key for the text
     /// @param value The text to set
     function setText(
-        bytes32 label,
+        bytes32 node,
         string calldata key,
         string calldata value
     ) external {
-        address owner = owner[label];
+        address owner = owner[node];
         require(owner != address(0), 'Name not registered');
         require(owner == msg.sender, 'Only owner');
-        texts[label][key] = value;
+        texts[recordVersions[node]][node][key] = value;
         //  emit TextChanged(node, key, key, value);
     }
     /// @notice Get the address of a node
@@ -116,7 +117,7 @@ contract Dm3NameRegistrar is
         bytes32 node,
         string calldata key
     ) external view override returns (string memory) {
-        return texts[node][key];
+        return texts[recordVersions[node]][node][key];
     }
     /// @notice Make a label node using the PARENT_NODE
     /// @param label The label to make a node for

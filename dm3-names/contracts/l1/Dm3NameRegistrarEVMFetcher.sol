@@ -20,6 +20,7 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget, Ownable {
     address public target;
     string public parentDomain;
 
+    uint256 private constant RECORD_VERSIONS_SLOT = 0;
     uint256 private constant PARENT_NODE_SLOT = 1;
     uint256 private constant OWNER_SLOT = 2;
     uint256 private constant REVERSE_SLOT = 3;
@@ -90,7 +91,10 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget, Ownable {
     ) private view returns (bytes memory) {
         EVMFetcher
             .newFetchRequest(verifier, target)
+            .getStatic(RECORD_VERSIONS_SLOT)
+            .element(node)
             .getDynamic(TEXTS_SLOT)
+            .ref(0)
             .element(node)
             .element(key)
             .fetch(this.textCallback.selector, '');
@@ -100,7 +104,7 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget, Ownable {
         bytes[] memory values,
         bytes memory
     ) public pure returns (bytes memory) {
-        return abi.encode(string(values[0]));
+        return abi.encode(string(values[1]));
     }
     function nameCallback(
         bytes[] memory values,
