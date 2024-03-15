@@ -60,15 +60,20 @@ contract Dm3NameRegistrar is
     /// @param _name The name to register
     function register(string calldata _name) external {
         string memory oldName = reverse[makeReverseNode(msg.sender)];
+        //Delete name
         if (bytes(_name).length == 0) {
+            //clear text records
+            clearRecords(makeLabelNode(oldName));
             // Clear name if the new name is empty
             delete owner[makeLabelNode(oldName)];
             delete reverse[makeReverseNode(msg.sender)];
             emit NameRemoved(msg.sender, oldName);
             return;
         }
-
+        //Select new name
         if (bytes(oldName).length > 0) {
+            //clear text records
+            clearRecords(makeLabelNode(oldName));
             // Clear old name if it exists
             delete owner[makeLabelNode(oldName)];
             emit NameRemoved(msg.sender, oldName);

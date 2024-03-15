@@ -22,7 +22,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (!Dm3NameRegistrar.address) throw 'Dm3NameRegistrar not found';
 
 
-  await deploy('Dm3NameRegistrarEVMFetcher', {
+  await deploy('Dm3
+  NameRegistrarEVMFetcher', {
     from: deployer,
     args: [OP_VERIFIER_ADDRESS, Dm3NameRegistrar.address, PARENT_DOMAIN],
     log: true,

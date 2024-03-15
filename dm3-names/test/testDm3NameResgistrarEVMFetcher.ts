@@ -29,7 +29,7 @@ declare module 'hardhat/types/runtime' {
   }
 }
 
-describe.only('Dm3 Name Registrar Fetcher', () => {
+describe('Dm3 Name Registrar Fetcher', () => {
   let provider: BrowserProvider;
   let signer: Signer;
   let verifier: Contract;
@@ -174,6 +174,7 @@ describe.only('Dm3 Name Registrar Fetcher', () => {
     const decoded = i.decodeFunctionResult('text', result2);
     expect(decoded[0]).to.equal(value);
   });
+
   it('Should set the verifier correctly', async function () {
     const newVerifier = await (await provider.getSigner(1)).getAddress();
     await dm3NameRegistrarEVMFetcher.connect(signer).setVerifier(newVerifier);

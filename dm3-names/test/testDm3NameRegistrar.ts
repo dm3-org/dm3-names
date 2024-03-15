@@ -116,20 +116,47 @@ describe('Dm3 name registrar', () => {
       );
       expect(value).to.equal('value');
     });
+    it('deletes text record if name has been deleted', async () => {
+      await target.register('alice');
+      await target.setText(ethers.namehash('alice.op.dm3.eth'), 'key', 'value');
+      const value = await target.text(
+        ethers.namehash('alice.op.dm3.eth'),
+        'key'
+      );
+      expect(value).to.equal('value');
+
+      await target.register(ethers.toUtf8Bytes(''));
+      const oldValue = await target.text(
+        ethers.namehash('alice.op.dm3.eth'),
+        'key'
+      );
+      expect(oldValue).to.equal('');
+    });
 
     it('reverts if name has not been registered', async () => {
-      await expect(
-        target.setText(ethers.namehash('alice.op.dm3.eth'), 'key', 'value')
-      ).to.be.revertedWith('Name not registered');
+      try {
+        await target.setText(
+          ethers.namehash('alice.op.dm3.eth'),
+          'key',
+          'value'
+        );
+        expect.fail('Should have thrown');
+      } catch (e: any) {
+        expect(e.message).to.contain('Name not registered');
+      }
     });
     it('reverts if msg.sender is not owner of name', async () => {
       await target.register('alice');
       const other = (await ethers.getSigners())[1];
-      await expect(
-        target
+      try {
+        await target
           .connect(other)
-          .setText(ethers.namehash('alice.op.dm3.eth'), 'key', 'value')
-      ).to.be.revertedWith('Only owner');
+          .setText(ethers.namehash('alice.op.dm3.eth'), 'key', 'value');
+        expect.fail('Should have thrown');
+      } catch (e: any) {
+        console.log(e);
+        expect(e.message).to.contain('Only owner');
+      }
     });
   });
 });
