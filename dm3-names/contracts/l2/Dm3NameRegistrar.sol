@@ -4,11 +4,17 @@ pragma solidity 0.8.17;
 import {IAddrResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/IAddrResolver.sol';
 import {INameResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/INameResolver.sol';
 import {ITextResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol';
+import {ResolverBase} from '@ensdomains/ens-contracts/contracts/resolvers/ResolverBase.sol';
 
 /// @title Dm3NameRegistrar
 /// @notice This contract is used for registering names in the ENS system. It is a combination of ENSResolver and ReverseRegistrar contracts. Allowing to register names and set text records for each name. By beeing compatible with ENSResolver and ReverseRegistrar
 
-contract Dm3NameRegistrar is IAddrResolver, INameResolver, ITextResolver {
+contract Dm3NameRegistrar is
+    ResolverBase,
+    IAddrResolver,
+    INameResolver,
+    ITextResolver
+{
     //Lookup table for hexadecimal conversion
     //Taken from ENS ReverseRegistrar contract
     //https://github.com/ensdomains/ens-contracts/blob/21736916300b26cb8ea1802dbf6c9ff054adaeab/contracts/reverseRegistrar/ReverseRegistrar.sol#L12
@@ -44,6 +50,9 @@ contract Dm3NameRegistrar is IAddrResolver, INameResolver, ITextResolver {
     /// @param _parentNode The parent node of the ENS
     constructor(bytes32 _parentNode) {
         PARENT_NODE = _parentNode;
+    }
+    function isAuthorised(bytes32 node) internal view override returns (bool) {
+        return owner[node] == msg.sender;
     }
 
     /// @notice Register a name in the ENS system
@@ -83,7 +92,7 @@ contract Dm3NameRegistrar is IAddrResolver, INameResolver, ITextResolver {
         require(owner != address(0), 'Name not registered');
         require(owner == msg.sender, 'Only owner');
         texts[label][key] = value;
-      //  emit TextChanged(node, key, key, value);
+        //  emit TextChanged(node, key, key, value);
     }
     /// @notice Get the address of a node
     /// @param node The node to get the address for

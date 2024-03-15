@@ -20,10 +20,10 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget, Ownable {
     address public target;
     string public parentDomain;
 
-    uint256 private constant PARENT_NODE_SLOT = 0;
-    uint256 private constant OWNER_SLOT = 1;
-    uint256 private constant REVERSE_SLOT = 2;
-    uint256 private constant TEXTS_SLOT = 3;
+    uint256 private constant PARENT_NODE_SLOT = 1;
+    uint256 private constant OWNER_SLOT = 2;
+    uint256 private constant REVERSE_SLOT = 3;
+    uint256 private constant TEXTS_SLOT = 4;
 
     //TODO add OZ ownable
     constructor(
