@@ -32,6 +32,7 @@ declare module 'hardhat/types/runtime' {
 describe('Dm3 Name Registrar Fetcher', () => {
   let provider: BrowserProvider;
   let signer: Signer;
+  let randomSigner: Signer;
   let verifier: Contract;
   let dm3NameRegistrar: Contract;
   let dm3NameRegistrarEVMFetcher: Contract;
@@ -42,8 +43,10 @@ describe('Dm3 Name Registrar Fetcher', () => {
     // Hack to get a 'real' ethers provider from hardhat. The default `HardhatProvider`
     // doesn't support CCIP-read.
     provider = new ethers.BrowserProvider(ethers.provider._hardhatProvider);
-    // provider.on("debug", (x: any) => console.log(JSON.stringify(x, undefined, 2)));
+    //provider.on("debug", (x: any) => console.log(JSON.stringify(x, undefined, 2)));
     signer = await provider.getSigner(0);
+    randomSigner = await provider.getSigner(1);
+
     const gateway = makeL1Gateway(provider as unknown as JsonRpcProvider);
     const server = new Server();
     gateway.add(server);
@@ -181,10 +184,32 @@ describe('Dm3 Name Registrar Fetcher', () => {
     expect(await dm3NameRegistrarEVMFetcher.verifier()).to.equal(newVerifier);
   });
 
+  it('Only owner can set Verifier', async function () {
+    const newVerifier = await (await provider.getSigner(1)).getAddress();
+    try {
+      await dm3NameRegistrarEVMFetcher.connect(randomSigner).setVerifier(newVerifier);
+      expect.fail('Should have thrown');
+    } catch (e) {
+      //A bit of a hack, but it's the only way to get the error message since ganaache doesn't support revert reasons
+      expect(e.message).to.not.contain('Should have thrown');
+    }
+  });
+
   it('Should set the target correctly', async function () {
     const newTarget = await (await provider.getSigner(1)).getAddress();
     await dm3NameRegistrarEVMFetcher.connect(signer).setTarget(newTarget);
     expect(await dm3NameRegistrarEVMFetcher.getFunction('target')()).to.equal(newTarget);
+  });
+
+  it('Only owner can set Target', async function () {
+    const newTarget = await (await provider.getSigner(1)).getAddress();
+    try {
+      await dm3NameRegistrarEVMFetcher.connect(randomSigner).setTarget(newTarget);
+      expect.fail('Should have thrown');
+    } catch (e) {
+      //A bit of a hack, but it's the only way to get the error message since ganaache doesn't support revert reasons
+      expect(e.message).to.not.contain('Should have thrown');
+    }
   });
 
   it('Should set the parent domain correctly', async function () {
@@ -195,5 +220,17 @@ describe('Dm3 Name Registrar Fetcher', () => {
     expect(await dm3NameRegistrarEVMFetcher.parentDomain()).to.equal(
       parentDomain
     );
+  });
+  it('Only owner can set parent domain', async function () {
+    const parentDomain = 'foo.bar';
+    try {
+      await dm3NameRegistrarEVMFetcher
+        .connect(randomSigner)
+        .setParentDomain(parentDomain);
+      expect.fail('Should have thrown');
+    } catch (e) {
+      //A bit of a hack, but it's the only way to get the error message since ganaache doesn't support revert reasons
+      expect(e.message).to.not.contain('Should have thrown');
+    }
   });
 });
