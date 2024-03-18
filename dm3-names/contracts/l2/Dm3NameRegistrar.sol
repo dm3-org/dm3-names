@@ -70,6 +70,11 @@ contract Dm3NameRegistrar is
             emit NameRemoved(msg.sender, oldName);
             return;
         }
+        //Check if the name is already registered. If not, revert
+        require(
+            owner[makeLabelNode(_name)] == address(0),
+            'Name already registered'
+        );
         //Select new name
         if (bytes(oldName).length > 0) {
             //clear text records

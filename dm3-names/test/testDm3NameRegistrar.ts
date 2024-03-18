@@ -21,38 +21,40 @@ declare module 'hardhat/types/runtime' {
 
 describe('Dm3 name registrar', () => {
   let target: Contract;
-  let signer: ethers.Signer;
+  let aliceSigner: ethers.Signer;
+  let bobSigner: ethers.Signer;
 
   beforeEach(async () => {
     const Dm3NameRegistrarFactory =
       await ethers.getContractFactory('Dm3NameRegistrar');
     const parentNode = ethers.namehash('op.dm3.eth');
     target = await Dm3NameRegistrarFactory.deploy(parentNode);
-    signer = (await ethers.getSigners())[0];
+    aliceSigner = (await ethers.getSigners())[0];
+    bobSigner = (await ethers.getSigners())[1];
   });
 
   describe('register', () => {
     it('can set dm3 name', async () => {
       await target.register('alice');
-      const reverseRecord = `${signer.address
+      const reverseRecord = `${aliceSigner.address
         .slice(2)
         .toLowerCase()}.addr.reverse`;
 
       const owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
       const name = await target.reverse(ethers.namehash(reverseRecord));
 
-      expect(owner).to.equal(signer.address);
+      expect(owner).to.equal(aliceSigner.address);
       expect(name).to.equal('alice');
     });
     it('can use addr to retrive address of node', async () => {
       await target.register('alice');
 
       const addr = await target.addr(ethers.namehash('alice.op.dm3.eth'));
-      expect(addr).to.equal(signer.address);
+      expect(addr).to.equal(aliceSigner.address);
     });
     it('can use reverse record to retrive name of address', async () => {
       await target.register('alice');
-      const reverseRecord = `${signer.address
+      const reverseRecord = `${aliceSigner.address
         .slice(2)
         .toLowerCase()}.addr.reverse`;
       const reverseNode = ethers.namehash(reverseRecord);
@@ -62,14 +64,14 @@ describe('Dm3 name registrar', () => {
     });
     it('registering a new name overrides the old name', async () => {
       await target.register('alice');
-      const reverseRecord = `${signer.address
+      const reverseRecord = `${aliceSigner.address
         .slice(2)
         .toLowerCase()}.addr.reverse`;
 
       let owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
       let name = await target.reverse(ethers.namehash(reverseRecord));
 
-      expect(owner).to.equal(signer.address);
+      expect(owner).to.equal(aliceSigner.address);
       expect(name).to.equal('alice');
 
       await target.register('bob');
@@ -79,21 +81,40 @@ describe('Dm3 name registrar', () => {
 
       const oldOwner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
 
-      expect(owner).to.equal(signer.address);
+      expect(owner).to.equal(aliceSigner.address);
       expect(name).to.equal('bob');
 
       expect(oldOwner).to.equal(ethers.ZeroAddress);
     });
-    it('passing an empty name deletes an existing record', async () => {
+    it('cant claim name that has been already registered', async () => {
       await target.register('alice');
-      const reverseRecord = `${signer.address
+      const reverseRecord = `${aliceSigner.address
         .slice(2)
         .toLowerCase()}.addr.reverse`;
 
       let owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
       let name = await target.reverse(ethers.namehash(reverseRecord));
 
-      expect(owner).to.equal(signer.address);
+      expect(owner).to.equal(aliceSigner.address);
+      expect(name).to.equal('alice');
+
+      try {
+        await target.connect(bobSigner).register('alice');
+        expect.fail('Should have thrown');
+      } catch (e: any) {
+        expect(e.message).to.contain('Name already registered');
+      }
+    });
+    it('passing an empty name deletes an existing record', async () => {
+      await target.register('alice');
+      const reverseRecord = `${aliceSigner.address
+        .slice(2)
+        .toLowerCase()}.addr.reverse`;
+
+      let owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
+      let name = await target.reverse(ethers.namehash(reverseRecord));
+
+      expect(owner).to.equal(aliceSigner.address);
       expect(name).to.equal('alice');
 
       await target.register(ethers.toUtf8Bytes(''));
