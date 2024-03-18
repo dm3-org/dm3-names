@@ -26,6 +26,8 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget, Ownable {
     uint256 private constant REVERSE_SLOT = 4;
     uint256 private constant TEXTS_SLOT = 5;
 
+    error UnknownSelector();
+
     /**
      * @notice Creates a new Dm3NameRegistrarEVMFetcher contract. Tha can be used to fetch data from the Dm3NameRegistrar contract using CCIP.
      * @param _verifier The EVM Verifier to be used by this contract.
@@ -92,6 +94,8 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget, Ownable {
             bytes32 node = abi.decode(data[4:], (bytes32));
             return _addr(node);
         }
+        //Revert if the selector is unknown
+        revert UnknownSelector();
     }
     /**
      * @notice Resolves the address for the given node.

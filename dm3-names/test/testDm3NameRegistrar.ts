@@ -57,13 +57,13 @@ describe('Dm3 name registrar', () => {
       expect(bobOwner).to.equal(bobSigner.address);
       expect(bobName).to.equal('bob');
     });
-    it('can use addr to retrive address of node', async () => {
+    it('can use addr to retrieve address of node', async () => {
       await target.register('alice');
 
       const addr = await target.addr(ethers.namehash('alice.op.dm3.eth'));
       expect(addr).to.equal(aliceSigner.address);
     });
-    it('can use reverse record to retrive name of address', async () => {
+    it('can use reverse record to retrieve name of address', async () => {
       await target.register('alice');
       const reverseRecord = `${aliceSigner.address
         .slice(2)
