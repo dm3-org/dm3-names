@@ -5,11 +5,13 @@ import {IAddrResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profi
 import {INameResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/INameResolver.sol';
 import {ITextResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol';
 import {ResolverBase} from '@ensdomains/ens-contracts/contracts/resolvers/ResolverBase.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
 
 /// @title Dm3NameRegistrar
 /// @notice This contract is used for registering names in the ENS system. It is a combination of ENSResolver and ReverseRegistrar contracts. Allowing to register names and set text records for each name. By beeing compatible with ENSResolver and ReverseRegistrar
 
 contract Dm3NameRegistrar is
+    Ownable,
     ResolverBase,
     IAddrResolver,
     INameResolver,
@@ -83,13 +85,25 @@ contract Dm3NameRegistrar is
             delete owner[makeLabelNode(oldName)];
             emit NameRemoved(msg.sender, oldName);
         }
-        //set owner record
-        owner[makeLabelNode(_name)] = msg.sender;
-        //set reverse record
-        reverse[makeReverseNode(msg.sender)] = _name;
-        //emit NameRegistered event
-        emit NameRegistered(msg.sender, _name);
+        _mint(_name, msg.sender);
     }
+
+    /// @notice Allows the contract owner to mint a new name
+    /// @dev This function can only be called by the contract owner
+    /// @param _name The name to be minted
+    /// @param _owner The address that will own the minted name
+    function ownerRegister(
+        string calldata _name,
+        address _owner
+    ) external onlyOwner {
+        //Even the owner can't mint a name that is already registered
+        require(
+            owner[makeLabelNode(_name)] == address(0),
+            'Name already registered'
+        );
+        _mint(_name, _owner);
+    }
+
     /// @notice Set text for a node
     /// @param node The node to set the text for
     /// @param key The key for the text
@@ -129,6 +143,15 @@ contract Dm3NameRegistrar is
     ) external view override returns (string memory) {
         return texts[recordVersions[node]][node][key];
     }
+    function _mint(string calldata _name, address _owner) internal {
+        //set owner record
+        owner[makeLabelNode(_name)] = _owner;
+        //set reverse record
+        reverse[makeReverseNode(_owner)] = _name;
+        //emit NameRegistered event
+        emit NameRegistered(_owner, _name);
+    }
+
     /// @notice Make a label node using the PARENT_NODE
     /// @param label The label to make a node for
     /// @return The node of the label

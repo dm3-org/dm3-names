@@ -19,7 +19,7 @@ declare module 'hardhat/types/runtime' {
   }
 }
 
-describe('Dm3 name registrar', () => {
+describe.only('Dm3 name registrar', () => {
   let target: Contract;
   let aliceSigner: ethers.Signer;
   let bobSigner: ethers.Signer;
@@ -36,15 +36,26 @@ describe('Dm3 name registrar', () => {
   describe('register', () => {
     it('can set dm3 name', async () => {
       await target.register('alice');
+      await target.connect(bobSigner).register('bob');
       const reverseRecord = `${aliceSigner.address
         .slice(2)
         .toLowerCase()}.addr.reverse`;
 
-      const owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
+      const owner = await target["owner(bytes32)"](ethers.namehash('alice.op.dm3.eth'));
       const name = await target.reverse(ethers.namehash(reverseRecord));
 
       expect(owner).to.equal(aliceSigner.address);
       expect(name).to.equal('alice');
+
+      const bobReverseRecord = `${bobSigner.address
+        .slice(2)
+        .toLowerCase()}.addr.reverse`;
+
+      const bobOwner = await target["owner(bytes32)"](ethers.namehash('bob.op.dm3.eth'));
+      const bobName = await target.reverse(ethers.namehash(bobReverseRecord));
+
+      expect(bobOwner).to.equal(bobSigner.address);
+      expect(bobName).to.equal('bob');
     });
     it('can use addr to retrive address of node', async () => {
       await target.register('alice');
@@ -68,7 +79,7 @@ describe('Dm3 name registrar', () => {
         .slice(2)
         .toLowerCase()}.addr.reverse`;
 
-      let owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
+      let owner = await target["owner(bytes32)"](ethers.namehash('alice.op.dm3.eth'));
       let name = await target.reverse(ethers.namehash(reverseRecord));
 
       expect(owner).to.equal(aliceSigner.address);
@@ -76,10 +87,10 @@ describe('Dm3 name registrar', () => {
 
       await target.register('bob');
 
-      owner = await target.owner(ethers.namehash('bob.op.dm3.eth'));
+      owner = await target["owner(bytes32)"](ethers.namehash('bob.op.dm3.eth'));
       name = await target.reverse(ethers.namehash(reverseRecord));
 
-      const oldOwner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
+      const oldOwner = await target["owner(bytes32)"](ethers.namehash('alice.op.dm3.eth'));
 
       expect(owner).to.equal(aliceSigner.address);
       expect(name).to.equal('bob');
@@ -92,7 +103,7 @@ describe('Dm3 name registrar', () => {
         .slice(2)
         .toLowerCase()}.addr.reverse`;
 
-      let owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
+      let owner = await target["owner(bytes32)"](ethers.namehash('alice.op.dm3.eth'));
       let name = await target.reverse(ethers.namehash(reverseRecord));
 
       expect(owner).to.equal(aliceSigner.address);
@@ -111,7 +122,7 @@ describe('Dm3 name registrar', () => {
         .slice(2)
         .toLowerCase()}.addr.reverse`;
 
-      let owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
+      let owner = await target["owner(bytes32)"](ethers.namehash('alice.op.dm3.eth'));
       let name = await target.reverse(ethers.namehash(reverseRecord));
 
       expect(owner).to.equal(aliceSigner.address);
@@ -119,11 +130,54 @@ describe('Dm3 name registrar', () => {
 
       await target.register(ethers.toUtf8Bytes(''));
 
-      owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
+      owner = await target["owner(bytes32)"](ethers.namehash('alice.op.dm3.eth'));
       name = await target.reverse(ethers.namehash(reverseRecord));
 
       expect(owner).to.equal(ethers.ZeroAddress);
       expect(name).to.equal('');
+    });
+  });
+  describe('ownerRegister', () => {
+    it('only owner', async () => {
+      try {
+        await target.connect(bobSigner).ownerRegister('alice', aliceSigner.address);
+        expect.fail('Should have thrown');
+      } catch (e: any) {
+        expect(e.message).to.contain('Ownable: caller is not the owner');
+      }
+    });
+    it('owner can register more than one name', async () => {
+      await target.ownerRegister('alice', aliceSigner.address);
+      await target.ownerRegister('bob', bobSigner.address);
+
+      const aliceOwner = await target["owner(bytes32)"](ethers.namehash('alice.op.dm3.eth'));
+      const bobOwner = await target["owner(bytes32)"](ethers.namehash('bob.op.dm3.eth'));
+      expect(aliceOwner).to.equal(aliceSigner.address);
+      expect(bobOwner).to.equal(bobSigner.address);
+
+      const aliceReverseRecord = `${aliceSigner.address
+        .slice(2)
+        .toLowerCase()}.addr.reverse`;
+      const bobReverseRecord = `${bobSigner.address
+        .slice(2)
+        .toLowerCase()}.addr.reverse`;
+
+      const aliceName = await target.reverse(
+        ethers.namehash(aliceReverseRecord)
+      );
+      const bobName = await target.reverse(ethers.namehash(bobReverseRecord));
+      expect(aliceName).to.equal('alice');
+      expect(bobName).to.equal('bob');
+
+    });
+    it('owner cant register a name that has been already registered', async () => {
+      await target.register('alice');
+      try {
+        await target.ownerRegister('alice', aliceSigner.address);
+        expect.fail('Should have thrown');
+      } catch (e: any) {
+        expect(e.message).to.contain('Name already registered');
+      }
     });
   });
 
@@ -175,7 +229,6 @@ describe('Dm3 name registrar', () => {
           .setText(ethers.namehash('alice.op.dm3.eth'), 'key', 'value');
         expect.fail('Should have thrown');
       } catch (e: any) {
-        console.log(e);
         expect(e.message).to.contain('Only owner');
       }
     });
