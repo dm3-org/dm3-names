@@ -28,7 +28,8 @@ describe('Dm3 name registrar', () => {
     const Dm3NameRegistrarFactory =
       await ethers.getContractFactory('Dm3NameRegistrar');
     const parentNode = ethers.namehash('op.dm3.eth');
-    target = await Dm3NameRegistrarFactory.deploy(parentNode);
+    target = await Dm3NameRegistrarFactory.deploy();
+    await target.initialize(parentNode);
     aliceSigner = (await ethers.getSigners())[0];
     bobSigner = (await ethers.getSigners())[1];
   });

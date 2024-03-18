@@ -85,9 +85,8 @@ describe('Dm3 Name Registrar Fetcher', () => {
       'Dm3NameRegistrar',
       signer
     );
-    dm3NameRegistrar = await dm3NameRegistrarFactory.deploy(
-      ethers.namehash(parentDomain)
-    );
+    dm3NameRegistrar = await dm3NameRegistrarFactory.deploy();
+    await dm3NameRegistrar.initialize(ethers.namehash(parentDomain));
 
     //Deploy Dm3NameRegistrarEVMFetcher
 
