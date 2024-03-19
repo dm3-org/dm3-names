@@ -5,15 +5,17 @@ import {IAddrResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profi
 import {INameResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/INameResolver.sol';
 import {ITextResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol';
 import {ResolverBase} from '@ensdomains/ens-contracts/contracts/resolvers/ResolverBase.sol';
-import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
-import '@openzeppelin/contracts/access/Ownable.sol';
+import {Initializable} from '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
+import {OwnableUpgradeable} from '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
+import {UUPSUpgradeable} from '@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol';
 
 /// @title Dm3NameRegistrar
 /// @notice This contract is used for registering names in the ENS system. It is a combination of ENSResolver and ReverseRegistrar contracts. Allowing to register names and set text records for each name. By beeing compatible with ENSResolver and ReverseRegistrar
 
 contract Dm3NameRegistrar is
     Initializable,
-    Ownable,
+    UUPSUpgradeable,
+    OwnableUpgradeable,
     ResolverBase,
     IAddrResolver,
     INameResolver,
@@ -51,10 +53,12 @@ contract Dm3NameRegistrar is
     // Event emitted when a name is removed
     event NameRemoved(address indexed addr, string indexed name);
 
-    constructor() Ownable(msg.sender) {}
+    function _authorizeUpgrade(address) internal override onlyOwner {}
 
     function initialize(bytes32 _parentNode) public initializer {
         PARENT_NODE = _parentNode;
+        __Ownable_init();
+        __UUPSUpgradeable_init();
     }
     function isAuthorised(bytes32 node) internal view override returns (bool) {
         return owner[node] == msg.sender;

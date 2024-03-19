@@ -2,7 +2,7 @@ import { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/
 import type { HardhatEthersHelpers } from '@nomicfoundation/hardhat-ethers/types';
 import { expect } from 'chai';
 import { Contract, ethers as ethersT } from 'ethers';
-import { ethers } from 'hardhat';
+import { ethers, upgrades } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 
 type ethersObj = typeof ethersT &
@@ -21,17 +21,33 @@ declare module 'hardhat/types/runtime' {
 
 describe('Dm3 name registrar', () => {
   let target: Contract;
+  let upgraded: Contract;
   let aliceSigner: ethers.Signer;
   let bobSigner: ethers.Signer;
 
   beforeEach(async () => {
     const Dm3NameRegistrarFactory =
       await ethers.getContractFactory('Dm3NameRegistrar');
+
     const parentNode = ethers.namehash('op.dm3.eth');
-    target = await Dm3NameRegistrarFactory.deploy();
-    await target.initialize(parentNode);
+    target = await upgrades.deployProxy(Dm3NameRegistrarFactory, [parentNode], {
+      initializer: 'initialize',
+      kind: 'uups',
+    });
+
     aliceSigner = (await ethers.getSigners())[0];
     bobSigner = (await ethers.getSigners())[1];
+  });
+
+  describe('Proxy', () => {
+    it('can upgrade contract ', async () => {
+      const TestProxyContractFactory =
+        await ethers.getContractFactory('TestProxyContract');
+      target = await upgrades.upgradeProxy(target, TestProxyContractFactory);
+      //The new logic contract now has the function parent node that was not present in the previous contract
+      const parentNode = await target.parentNode();
+      expect(parentNode).to.equal(ethers.namehash('op.dm3.eth'));
+    });
   });
 
   describe('register', () => {
@@ -42,7 +58,9 @@ describe('Dm3 name registrar', () => {
         .slice(2)
         .toLowerCase()}.addr.reverse`;
 
-      const owner = await target["owner(bytes32)"](ethers.namehash('alice.op.dm3.eth'));
+      const owner = await target['owner(bytes32)'](
+        ethers.namehash('alice.op.dm3.eth')
+      );
       const name = await target.reverse(ethers.namehash(reverseRecord));
 
       expect(owner).to.equal(aliceSigner.address);
@@ -52,7 +70,9 @@ describe('Dm3 name registrar', () => {
         .slice(2)
         .toLowerCase()}.addr.reverse`;
 
-      const bobOwner = await target["owner(bytes32)"](ethers.namehash('bob.op.dm3.eth'));
+      const bobOwner = await target['owner(bytes32)'](
+        ethers.namehash('bob.op.dm3.eth')
+      );
       const bobName = await target.reverse(ethers.namehash(bobReverseRecord));
 
       expect(bobOwner).to.equal(bobSigner.address);
@@ -80,7 +100,9 @@ describe('Dm3 name registrar', () => {
         .slice(2)
         .toLowerCase()}.addr.reverse`;
 
-      let owner = await target["owner(bytes32)"](ethers.namehash('alice.op.dm3.eth'));
+      let owner = await target['owner(bytes32)'](
+        ethers.namehash('alice.op.dm3.eth')
+      );
       let name = await target.reverse(ethers.namehash(reverseRecord));
 
       expect(owner).to.equal(aliceSigner.address);
@@ -88,10 +110,12 @@ describe('Dm3 name registrar', () => {
 
       await target.register('bob');
 
-      owner = await target["owner(bytes32)"](ethers.namehash('bob.op.dm3.eth'));
+      owner = await target['owner(bytes32)'](ethers.namehash('bob.op.dm3.eth'));
       name = await target.reverse(ethers.namehash(reverseRecord));
 
-      const oldOwner = await target["owner(bytes32)"](ethers.namehash('alice.op.dm3.eth'));
+      const oldOwner = await target['owner(bytes32)'](
+        ethers.namehash('alice.op.dm3.eth')
+      );
 
       expect(owner).to.equal(aliceSigner.address);
       expect(name).to.equal('bob');
@@ -104,7 +128,9 @@ describe('Dm3 name registrar', () => {
         .slice(2)
         .toLowerCase()}.addr.reverse`;
 
-      let owner = await target["owner(bytes32)"](ethers.namehash('alice.op.dm3.eth'));
+      let owner = await target['owner(bytes32)'](
+        ethers.namehash('alice.op.dm3.eth')
+      );
       let name = await target.reverse(ethers.namehash(reverseRecord));
 
       expect(owner).to.equal(aliceSigner.address);
@@ -123,7 +149,9 @@ describe('Dm3 name registrar', () => {
         .slice(2)
         .toLowerCase()}.addr.reverse`;
 
-      let owner = await target["owner(bytes32)"](ethers.namehash('alice.op.dm3.eth'));
+      let owner = await target['owner(bytes32)'](
+        ethers.namehash('alice.op.dm3.eth')
+      );
       let name = await target.reverse(ethers.namehash(reverseRecord));
 
       expect(owner).to.equal(aliceSigner.address);
@@ -131,7 +159,9 @@ describe('Dm3 name registrar', () => {
 
       await target.register(ethers.toUtf8Bytes(''));
 
-      owner = await target["owner(bytes32)"](ethers.namehash('alice.op.dm3.eth'));
+      owner = await target['owner(bytes32)'](
+        ethers.namehash('alice.op.dm3.eth')
+      );
       name = await target.reverse(ethers.namehash(reverseRecord));
 
       expect(owner).to.equal(ethers.ZeroAddress);
@@ -141,19 +171,27 @@ describe('Dm3 name registrar', () => {
   describe('ownerRegister', () => {
     it('only owner', async () => {
       try {
-        await target.connect(bobSigner).ownerRegister('alice', aliceSigner.address);
+        await target
+          .connect(bobSigner)
+          .ownerRegister('alice', aliceSigner.address);
         expect.fail('Should have thrown');
       } catch (e: any) {
-        console.log(e.message)
+        console.log(e.message);
         expect(e.message).to.contain('revert');
       }
     });
     it('owner can register more than one name', async () => {
+      const owner = await target.owner();
+      console.log(owner);
       await target.ownerRegister('alice', aliceSigner.address);
       await target.ownerRegister('bob', bobSigner.address);
 
-      const aliceOwner = await target["owner(bytes32)"](ethers.namehash('alice.op.dm3.eth'));
-      const bobOwner = await target["owner(bytes32)"](ethers.namehash('bob.op.dm3.eth'));
+      const aliceOwner = await target['owner(bytes32)'](
+        ethers.namehash('alice.op.dm3.eth')
+      );
+      const bobOwner = await target['owner(bytes32)'](
+        ethers.namehash('bob.op.dm3.eth')
+      );
       expect(aliceOwner).to.equal(aliceSigner.address);
       expect(bobOwner).to.equal(bobSigner.address);
 
@@ -170,7 +208,6 @@ describe('Dm3 name registrar', () => {
       const bobName = await target.reverse(ethers.namehash(bobReverseRecord));
       expect(aliceName).to.equal('alice');
       expect(bobName).to.equal('bob');
-
     });
     it('owner cant register a name that has been already registered', async () => {
       await target.register('alice');

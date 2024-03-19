@@ -18,6 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     args: [parentNode],
     log: true,
+    proxy: true,
   });
 
   console.log(`Dm3NameRegistrar is deployed at ${deployment.address}`);

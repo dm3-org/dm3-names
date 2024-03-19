@@ -20,11 +20,11 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget, Ownable {
     address public target;
     string public parentDomain;
 
-    uint256 private constant RECORD_VERSIONS_SLOT = 1;
-    uint256 private constant PARENT_NODE_SLOT = 2;
-    uint256 private constant OWNER_SLOT = 3;
-    uint256 private constant REVERSE_SLOT = 4;
-    uint256 private constant TEXTS_SLOT = 5;
+    uint256 private constant RECORD_VERSIONS_SLOT = 201;
+    uint256 private constant PARENT_NODE_SLOT = 202;
+    uint256 private constant OWNER_SLOT = 203;
+    uint256 private constant REVERSE_SLOT = 204;
+    uint256 private constant TEXTS_SLOT = 205;
 
     error UnknownSelector();
 
