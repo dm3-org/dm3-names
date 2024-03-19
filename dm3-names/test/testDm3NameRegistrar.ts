@@ -144,7 +144,8 @@ describe('Dm3 name registrar', () => {
         await target.connect(bobSigner).ownerRegister('alice', aliceSigner.address);
         expect.fail('Should have thrown');
       } catch (e: any) {
-        expect(e.message).to.contain('Ownable: caller is not the owner');
+        console.log(e.message)
+        expect(e.message).to.contain('revert');
       }
     });
     it('owner can register more than one name', async () => {

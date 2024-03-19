@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity 0.8.25;
 
 import {EVMFetcher} from '@ensdomains/evm-verifier/contracts/EVMFetcher.sol';
 import {EVMFetchTarget} from '@ensdomains/evm-verifier/contracts/EVMFetchTarget.sol';
@@ -38,7 +38,7 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget, Ownable {
         IEVMVerifier _verifier,
         address _target,
         string memory _parentDomain
-    ) {
+    ) Ownable(msg.sender) {
         verifier = _verifier;
         target = _target;
         parentDomain = _parentDomain;

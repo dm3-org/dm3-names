@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity 0.8.25;
 
 import {IAddrResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/IAddrResolver.sol';
 import {INameResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/INameResolver.sol';
@@ -51,6 +51,8 @@ contract Dm3NameRegistrar is
     // Event emitted when a name is removed
     event NameRemoved(address indexed addr, string indexed name);
 
+    constructor() Ownable(msg.sender) {}
+
     function initialize(bytes32 _parentNode) public initializer {
         PARENT_NODE = _parentNode;
     }
@@ -72,7 +74,7 @@ contract Dm3NameRegistrar is
             emit NameRemoved(msg.sender, oldName);
             return;
         }
-        //Check if the name is already registered. If not, revert
+        //Check if the name is already registered. If so, revert
         require(
             owner[makeLabelNode(_name)] == address(0),
             'Name already registered'
@@ -113,9 +115,9 @@ contract Dm3NameRegistrar is
         string calldata key,
         string calldata value
     ) external {
-        address owner = owner[node];
-        require(owner != address(0), 'Name not registered');
-        require(owner == msg.sender, 'Only owner');
+        address _owner = owner[node];
+        require(_owner != address(0), 'Name not registered');
+        require(_owner == msg.sender, 'Only owner');
         texts[recordVersions[node]][node][key] = value;
         //  emit TextChanged(node, key, key, value);
     }
@@ -160,18 +162,18 @@ contract Dm3NameRegistrar is
             keccak256(abi.encodePacked(PARENT_NODE, keccak256(bytes(label))));
     }
     /// @notice Make a label node used for the reverse record using the ADDR_REVERSE_NODE
-    function makeReverseNode(address addr) private pure returns (bytes32) {
+    function makeReverseNode(address _addr) private pure returns (bytes32) {
         return
             keccak256(
-                abi.encodePacked(ADDR_REVERSE_NODE, sha3HexAddress(addr))
+                abi.encodePacked(ADDR_REVERSE_NODE, sha3HexAddress(_addr))
             );
     }
 
     /// @notice Convert an address to a hexadecimal string and hash it
-    /// @param addr The address to convert and hash
+    /// @param _addr The address to convert and hash
     /// @dev taken from ENS ReverseRegistrar contract
     /// @dev https://github.com/ensdomains/ens-contracts/blob/21736916300b26cb8ea1802dbf6c9ff054adaeab/contracts/reverseRegistrar/ReverseRegistrar.sol#L164
-    function sha3HexAddress(address addr) private pure returns (bytes32 ret) {
+    function sha3HexAddress(address _addr) private pure returns (bytes32 ret) {
         assembly {
             for {
                 let i := 40
@@ -179,11 +181,11 @@ contract Dm3NameRegistrar is
 
             } {
                 i := sub(i, 1)
-                mstore8(i, byte(and(addr, 0xf), lookup))
-                addr := div(addr, 0x10)
+                mstore8(i, byte(and(_addr, 0xf), lookup))
+                _addr := div(_addr, 0x10)
                 i := sub(i, 1)
-                mstore8(i, byte(and(addr, 0xf), lookup))
-                addr := div(addr, 0x10)
+                mstore8(i, byte(and(_addr, 0xf), lookup))
+                _addr := div(_addr, 0x10)
             }
 
             ret := keccak256(0, 40)

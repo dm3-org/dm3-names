@@ -3,6 +3,8 @@ import { HardhatUserConfig } from 'hardhat/config';
 import 'hardhat-storage-layout';
 import 'hardhat-deploy';
 import 'hardhat-deploy-ethers';
+import '@openzeppelin/hardhat-upgrades';
+
 const DEPLOYER_PRIVATE_KEY =
   process.env.DEPLOYER_PRIVATE_KEY ??
   'ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
@@ -13,7 +15,7 @@ const L2_ETHERSCAN_API_KEY = process.env.L2_ETHERSCAN_API_KEY || '';
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: '0.8.17',
+    version: '0.8.25',
     settings: {
       optimizer: {
         enabled: true,
