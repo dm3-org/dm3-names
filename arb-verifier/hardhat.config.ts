@@ -11,7 +11,7 @@ const L1_ETHERSCAN_API_KEY = process.env.L1_ETHERSCAN_API_KEY;
 const L2_ETHERSCAN_API_KEY = process.env.L2_ETHERSCAN_API_KEY;
 
 const config: HardhatUserConfig = {
-  solidity: '0.8.19',
+  solidity: '0.8.25',
   networks: {
     arbDevnetL1: {
       url: 'http://127.0.0.1:8545/',
