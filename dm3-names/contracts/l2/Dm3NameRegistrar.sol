@@ -123,7 +123,7 @@ contract Dm3NameRegistrar is
         require(_owner != address(0), 'Name not registered');
         require(_owner == msg.sender, 'Only owner');
         texts[recordVersions[node]][node][key] = value;
-        //  emit TextChanged(node, key, key, value);
+        emit TextChanged(node, key, key, value);
     }
     /// @notice Get the address of a node
     /// @param node The node to get the address for
