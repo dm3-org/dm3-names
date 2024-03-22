@@ -60,9 +60,6 @@ contract Dm3NameRegistrar is
         __Ownable_init();
         __UUPSUpgradeable_init();
     }
-    function isAuthorised(bytes32 node) internal view override returns (bool) {
-        return owner[node] == msg.sender;
-    }
 
     /// @notice Register a name in the ENS system
     /// @param _name The name to register
@@ -156,6 +153,13 @@ contract Dm3NameRegistrar is
         reverse[makeReverseNode(_owner)] = _name;
         //emit NameRegistered event
         emit NameRegistered(_owner, _name);
+    }
+
+    /// @notice Checks if the sender is the owner of the node
+    /// @param node The node to check for ownership
+    /// @return A boolean indicating if the sender is the owner of the node
+    function isAuthorised(bytes32 node) internal view override returns (bool) {
+        return owner[node] == msg.sender;
     }
 
     /// @notice Make a label node using the PARENT_NODE
