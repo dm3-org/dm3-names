@@ -83,4 +83,22 @@ bun run hardhat deploy --network goerli
 ```
 
 
-## Deployments
+# Deployments
+
+## Testnet
+
+### Sepolia 
+
+OPVerifier: 0x7b284D20F153948259b6E30c1B5f03d161daEbed
+Dm3NameRegistrarFetcher: 0x2BAD1FeC0a2629757470984284C11EA00adB8E6F
+
+### Optimism Sepolia
+
+Dm3NameRegistrar: 0xF5b24cD05D6e6E9b8AC2B97cD90C38a8F2Df57FB
+
+## Mainnet 
+
+### Mainnet 
+
+OPVerifier: 0x59c748d518cdc9db8fe634c0c126a5fa6e2e9ee3
+Dm3NameRegistrarFetcher: 0xa9369f43ab09613ca32bc3b51201493bd24ced63
