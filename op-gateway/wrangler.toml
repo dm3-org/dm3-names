@@ -1,5 +1,5 @@
-name = "op-gateway-worker"
-account_id = "15dcc9085cb794bb4f29d3e8177ac880"
+name = "dm3-opname-gateway"
+#account_id = "15dcc9085cb794bb4f29d3e8177ac880"
 main = "./src/worker.ts"
 node_compat = true
 compatibility_date = "2023-10-13"
@@ -11,3 +11,7 @@ port = 8080
 command = "yarn build"
 
 [vars]
+L1_PROVIDER_URL = ''
+L2_PROVIDER_URL = ''
+L2_OUTPUT_ORACLE = '0xdfe97868233d1aa22e815a266982f2cf17685a27'
+DELAY =0

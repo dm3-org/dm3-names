@@ -11,13 +11,13 @@
     "l1-verifier",
     "op-verifier",
     "arb-verifier",
-    "crosschain-resolver"
+    "dm3-names"
   ],
   "scripts": {
     "env": "env",
     "workspace": "bun ./scripts/workspace.ts",
     "build": "bun run workspace evm-gateway build && bun run workspace -evm-gateway build",
-    "test": "bun run workspace l1-verifier test && bun run workspace crosschain-resolver test",
+    "test": "bun run workspace l1-verifier test && bun run workspace dm3-names test",
     "lint": "bun run workspace all lint",
     "prepare": "husky install"
   },
