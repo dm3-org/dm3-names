@@ -101,4 +101,9 @@ Dm3NameRegistrar: 0xF5b24cD05D6e6E9b8AC2B97cD90C38a8F2Df57FB
 ### Mainnet 
 
 OPVerifier: 0x59c748d518cdc9db8fe634c0c126a5fa6e2e9ee3
+
 Dm3NameRegistrarFetcher: 0xa9369f43ab09613ca32bc3b51201493bd24ced63
+
+### OP Mainnet
+
+Dm3NameRegistrar : 0x59c748d518CDC9dB8fE634c0C126A5fa6E2E9ee
