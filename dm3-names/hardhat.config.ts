@@ -44,17 +44,32 @@ const config: HardhatUserConfig = {
         l2: 'optimismGoerli',
       },
     },
+    mainnet: {
+      url: L1_PROVIDER_URL,
+      accounts: [DEPLOYER_PRIVATE_KEY],
+      deploy: ['deploy_l1/'],
+      companionNetworks: {
+        l2: 'optimism',
+      },
+    },
     optimismGoerli: {
       url: 'https://sepolia.optimism.io',
+      accounts: [DEPLOYER_PRIVATE_KEY],
+      deploy: ['deploy_l2/'],
+    },
+    optimism: {
+      url: '',
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: ['deploy_l2/'],
     },
   },
   etherscan: {
     apiKey: {
+      mainnet: L1_ETHERSCAN_API_KEY,
       goerli: L1_ETHERSCAN_API_KEY,
       sepolia: L1_ETHERSCAN_API_KEY,
       optimismGoerli: L2_ETHERSCAN_API_KEY,
+      optimism: L2_ETHERSCAN_API_KEY,
     },
     customChains: [
       {

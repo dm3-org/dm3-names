@@ -15,17 +15,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (!PARENT_DOMAIN) throw 'Set $PARENT_DOMAIIN';
   console.log({ PARENT_DOMAIIN: PARENT_DOMAIN });
 
-  const Dm3NameRegistrar = await hre.companionNetworks['l2'].deployments.get('Dm3NameRegistrar');
+  const DM3_NAMER_REGISTRAR_ADDRESS = process.env.DM3_NAMER_REGISTRAR_ADDRESS;
+  if (!DM3_NAMER_REGISTRAR_ADDRESS) throw 'Set $DM3_NAMER_REGISTRAR_ADDRESS';
+  console.log({ DM3_NAMER_REGISTRAR_ADDRESS });
+  console.log('args ', [OP_VERIFIER_ADDRESS, DM3_NAMER_REGISTRAR_ADDRESS, PARENT_DOMAIN])
 
-  console.log({ Dm3NameRegistrar })
 
-  if (!Dm3NameRegistrar.address) throw 'Dm3NameRegistrar not found';
-
-
-  await deploy('Dm3
-  NameRegistrarEVMFetcher', {
+  await deploy('Dm3NameRegistrarEVMFetcher', {
     from: deployer,
-    args: [OP_VERIFIER_ADDRESS, Dm3NameRegistrar.address, PARENT_DOMAIN],
+    args: [OP_VERIFIER_ADDRESS, DM3_NAMER_REGISTRAR_ADDRESS, PARENT_DOMAIN],
     log: true,
   });
 };

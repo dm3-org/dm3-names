@@ -4,11 +4,13 @@ import { DeployFunction } from 'hardhat-deploy/types';
 const GATEWAY_URLS = {
   opDevnetL1: 'http://localhost:8080/{sender}/{data}.json',
   goerli: 'https://dm3-test-worker.alex-941.workers.dev',
+  mainnet: 'https://dm3-opname-gateway.alex-941.workers.dev',
 };
 
 const L2_OUTPUT_ORACLE_ADDRESSES = {
   goerli: '0xE6Dfba0953616Bacab0c9A8ecb3a9BBa77FC15c0',
   sepolia: '0x90E9c4f8a994a250F6aEfd61CAFb4F2e895D458F',
+  mainnet: '0xdfe97868233d1aa22e815a266982f2cf17685a27',
 };
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -24,7 +26,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   } else {
     L2_OUTPUT_ORACLE_ADDRESS = L2_OUTPUT_ORACLE_ADDRESSES[network.name];
   }
-  console.log('OPVerifier', [[GATEWAY_URL], L2_OUTPUT_ORACLE_ADDRESS]);
+  console.log('OPVerifier',  [[GATEWAY_URLS[network.name]], L2_OUTPUT_ORACLE_ADDRESS]);
   console.log('deployer', deployer);
   await deploy('OPVerifier', {
     from: deployer,
